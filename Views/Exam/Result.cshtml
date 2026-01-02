@@ -1,0 +1,285 @@
+@{
+    ViewData["Title"] = "Exam Result";
+    Layout = null;
+    
+    var grade = ViewBag.Grade as int? ?? 0;
+    var examTitle = ViewBag.ExamTitle as string ?? "Exam";
+    var studentName = ViewBag.StudentName as string ?? "Student";
+    
+    // Determine grade status
+    var isPassed = grade >= 50;
+    var gradeClass = grade >= 85 ? "excellent" : grade >= 70 ? "good" : grade >= 50 ? "pass" : "fail";
+    var gradeLabel = grade >= 85 ? "Excellent!" : grade >= 70 ? "Good Job!" : grade >= 50 ? "Passed" : "Failed";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"]</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 20px;
+            padding: 50px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
+            max-width: 500px;
+            width: 100%;
+            animation: slideUp 0.6s ease;
+        }
+
+        @@keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-icon {
+            font-size: 80px;
+            margin-bottom: 20px;
+        }
+
+        .result-title {
+            font-size: 28px;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .exam-name {
+            font-size: 16px;
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .grade-circle {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            margin: 0 auto 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+        }
+
+        .grade-circle.excellent {
+            background: linear-gradient(135deg, #10b981, #059669);
+        }
+
+        .grade-circle.good {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+        }
+
+        .grade-circle.pass {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+        }
+
+        .grade-circle.fail {
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+        }
+
+        .grade-value {
+            font-size: 48px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .grade-percent {
+            font-size: 18px;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .grade-label {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .grade-label.excellent { color: #10b981; }
+        .grade-label.good { color: #3b82f6; }
+        .grade-label.pass { color: #f59e0b; }
+        .grade-label.fail { color: #ef4444; }
+
+        .message {
+            color: #666;
+            font-size: 15px;
+            margin-bottom: 30px;
+            line-height: 1.6;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-secondary:hover {
+            background: #e5e7eb;
+        }
+
+        .confetti {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+
+    @if (isPassed)
+    {
+        <div class="confetti" id="confetti"></div>
+    }
+
+    <div class="result-card">
+        <div class="result-icon">
+            @if (grade >= 85)
+            {
+                <span>🏆</span>
+            }
+            else if (grade >= 70)
+            {
+                <span>🎉</span>
+            }
+            else if (grade >= 50)
+            {
+                <span>✅</span>
+            }
+            else
+            {
+                <span>😔</span>
+            }
+        </div>
+
+        <h1 class="result-title">Exam Completed!</h1>
+        <p class="exam-name">@examTitle • @studentName</p>
+
+        <div class="grade-circle @gradeClass">
+            <span class="grade-value">@grade</span>
+            <span class="grade-percent">%</span>
+        </div>
+
+        <h2 class="grade-label @gradeClass">@gradeLabel</h2>
+
+        <p class="message">
+            @if (grade >= 85)
+            {
+                <text>Outstanding performance! You've demonstrated excellent understanding of the material.</text>
+            }
+            else if (grade >= 70)
+            {
+                <text>Great job! You have a solid understanding of the subject matter.</text>
+            }
+            else if (grade >= 50)
+            {
+                <text>You passed! Keep studying to improve your score next time.</text>
+            }
+            else
+            {
+                <text>Don't give up! Review the material and try again.</text>
+            }
+        </p>
+
+        <div class="buttons">
+            <a href="@Url.Action("Index", "Home")" class="btn btn-primary">🏠 Back to Dashboard</a>
+            <a href="@Url.Action("MyExams", "Home")" class="btn btn-secondary">📊 View All Grades</a>
+        </div>
+    </div>
+
+    @if (isPassed)
+    {
+        <script>
+            // Simple confetti effect for passing
+            function createConfetti() {
+                const colors = ['#667eea', '#764ba2', '#10b981', '#f59e0b', '#3b82f6'];
+                const confettiContainer = document.getElementById('confetti');
+                
+                for (let i = 0; i < 50; i++) {
+                    const confetti = document.createElement('div');
+                    confetti.style.cssText = `
+                        position: absolute;
+                        width: 10px;
+                        height: 10px;
+                        background: ${colors[Math.floor(Math.random() * colors.length)]};
+                        left: ${Math.random() * 100}%;
+                        top: -10px;
+                        border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+                        animation: fall ${2 + Math.random() * 3}s linear forwards;
+                    `;
+                    confettiContainer.appendChild(confetti);
+                }
+            }
+
+            // Add fall animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @@keyframes fall {
+                    to {
+                        transform: translateY(100vh) rotate(720deg);
+                        opacity: 0;
+                    }
+                }
+            `;
+            document.head.appendChild(style);
+
+            createConfetti();
+        </script>
+    }
+
+</body>
+</html>

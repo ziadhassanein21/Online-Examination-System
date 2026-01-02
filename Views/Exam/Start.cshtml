@@ -1,0 +1,302 @@
+@model ASQL_Online_Exam_.Controllers.ExamViewModel
+@{
+    ViewData["Title"] = "ITI Online Exam";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>@ViewData["Title"] - @Model.ExamTitle</title>
+    <link rel="stylesheet" href="~/css/site.css">
+    <style>
+        body {
+            background-color: #E2F1E7;
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        .parent {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100px;
+            padding-top: 5%;
+            padding-bottom: 5%;
+        }
+
+        #form {
+            width: 60%;
+            max-width: 800px;
+            padding: 30px;
+            border-radius: 10px;
+            background-color: #ffffff;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header-section h2 {
+            margin: 0;
+            color: #2c3e50;
+        }
+
+        hr {
+            margin-bottom: 30px;
+            border: none;
+            border-top: 2px solid #E2F1E7;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #5F9598;
+        }
+
+        .form-group h3 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+
+        .option {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 8px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 2px solid transparent;
+        }
+
+        .option:hover {
+            border: 2px solid #5F9598;
+            background-color: #E2F1E7;
+        }
+
+        .option.selected {
+            border: 2px solid #5F9598;
+            background-color: #E2F1E7;
+        }
+
+        .option input[type="radio"] {
+            margin-right: 10px;
+            transform: scale(1.2);
+            accent-color: #5F9598;
+        }
+
+        .option label {
+            cursor: pointer;
+            flex: 1;
+            color: #333;
+        }
+
+        input[type="submit"], .submit-btn {
+            background-color: #5F9598;
+            color: #ffffff;
+            width: 100%;
+            height: 50px;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            border: none;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background-color 0.3s;
+        }
+
+        input[type="submit"]:hover, .submit-btn:hover {
+            background-color: #4a7a7d;
+        }
+
+        .timer-badge {
+            background: #e74c3c;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-weight: bold;
+            font-size: 16px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+
+        .back-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 10px 25px;
+            background: #5F9598;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+        }
+
+        .debug-info {
+            color: #e67e22;
+            font-size: 12px;
+            margin-top: 20px;
+            padding: 15px;
+            background: #fff8e1;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .question-badge {
+            display: inline-block;
+            background: #5F9598;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 10px;
+        }
+
+        @@media (max-width: 768px) {
+            #form {
+                width: 90%;
+                padding: 20px;
+            }
+
+            .header-section {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="parent">
+        <div id="form">
+            <div class="header-section">
+                <h2>🎓 Exam: @Model.ExamTitle</h2>
+                <h2>👤 @Model.StudentName</h2>
+            </div>
+            <div class="header-section">
+                <h2>📚 Course: @Model.CourseName</h2>
+                <div class="timer-badge" id="timer">⏱️ @Model.ExamDuration:00</div>
+            </div>
+            <hr />
+
+            @if (Model.Questions != null && Model.Questions.Count > 0)
+            {
+                <form asp-action="Submit" asp-controller="Exam" method="post" id="examForm">
+                    <input type="hidden" name="examId" value="@Model.ExamId" />
+
+                    @for (int i = 0; i < Model.Questions.Count; i++)
+                    {
+                        var question = Model.Questions[i];
+                        <div class="form-group">
+                            <h3>
+                                Q@(i + 1): @question.QuestionText
+                                <span class="question-badge">@question.QuestionGrade pts</span>
+                            </h3>
+                            
+                            @{ var choiceLetter = 'a'; }
+                            @foreach (var choice in question.Choices)
+                            {
+                                <div class="option" onclick="selectOption(this, @question.QuestionId)">
+                                    <input type="radio" 
+                                           name="answers[@question.QuestionId]" 
+                                           value="@choice.ChoiceId" 
+                                           id="q@(question.QuestionId)_c@(choice.ChoiceId)" />
+                                    <label for="q@(question.QuestionId)_c@(choice.ChoiceId)">@(choiceLetter++)- @choice.ChoiceText</label>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <input type="submit" value="✅ Submit Exam" onclick="return confirmSubmit()" />
+                </form>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <h3>📋 No Questions Available</h3>
+                    <p>This exam doesn't have any questions assigned yet.</p>
+                    @if (!string.IsNullOrEmpty(Model.DebugMessage))
+                    {
+                        <div class="debug-info">
+                            <strong>Debug Info:</strong><br/>@Model.DebugMessage
+                        </div>
+                    }
+                    <a href="@Url.Action("Index", "Home")" class="back-btn">← Back to Dashboard</a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <script>
+        // Option selection - scoped to question
+        function selectOption(option, questionId) {
+            // Only clear selection within the same question group
+            var questionGroup = option.parentElement;
+            questionGroup.querySelectorAll('.option').forEach(function(o) {
+                o.classList.remove('selected');
+            });
+
+            var input = option.querySelector('input[type="radio"]');
+            input.checked = true;
+            option.classList.add('selected');
+        }
+
+        // Confirm submission
+        function confirmSubmit() {
+            var total = document.querySelectorAll('.form-group').length;
+            var answered = 0;
+            document.querySelectorAll('.form-group').forEach(function(group) {
+                if (group.querySelector('.option.selected')) {
+                    answered++;
+                }
+            });
+            
+            if (answered < total) {
+                return confirm('You have answered ' + answered + ' out of ' + total + ' questions. Are you sure you want to submit?');
+            }
+            return confirm('Are you sure you want to submit your exam?');
+        }
+
+        // Timer countdown
+        var duration = @Model.ExamDuration * 60;
+        var timerElement = document.getElementById('timer');
+
+        var countdown = setInterval(function() {
+            var minutes = Math.floor(duration / 60);
+            var seconds = duration % 60;
+            
+            timerElement.textContent = '⏱️ ' + minutes + ':' + (seconds < 10 ? '0' : '') + seconds;
+            
+            if (duration <= 300) {
+                timerElement.style.backgroundColor = '#c0392b';
+                timerElement.style.animation = 'pulse 0.5s infinite';
+            }
+            
+            if (duration <= 0) {
+                clearInterval(countdown);
+                alert('Time is up! Your exam will be submitted automatically.');
+                document.getElementById('examForm').submit();
+            }
+            
+            duration--;
+        }, 1000);
+    </script>
+
+</body>
+</html>

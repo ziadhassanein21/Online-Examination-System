@@ -1,0 +1,236 @@
+﻿@model ASQL_Online_Exam_.DTO.RegisterDTO
+@using Microsoft.AspNetCore.Mvc.Rendering
+
+@{
+    ViewData["Title"] = "Student Registration";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>@ViewData["Title"]</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Navbar */
+        nav {
+            background: #fff;
+            padding: 15px 40px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            nav h1 {
+                margin: 0;
+                font-size: 22px;
+                color: #667eea;
+            }
+
+            nav a {
+                text-decoration: none;
+                color: #764ba2;
+                font-weight: bold;
+                margin-left: 15px;
+            }
+
+        /* Main container */
+        .register-container {
+            background: #fff;
+            width: 450px;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            text-align: center;
+            margin: 40px auto;
+            flex: 1; /* So footer sticks to bottom */
+        }
+
+        h2 {
+            margin-bottom: 25px;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+            text-align: left;
+        }
+
+            .form-group label {
+                display: block;
+                margin-bottom: 6px;
+                color: #555;
+                font-weight: 600;
+            }
+
+            .form-group input, .form-group select {
+                width: 100%;
+                padding: 12px;
+                border-radius: 8px;
+                border: 1px solid #ddd;
+                font-size: 15px;
+                transition: 0.3s;
+            }
+
+                .form-group input:focus, .form-group select:focus {
+                    outline: none;
+                    border-color: #667eea;
+                    box-shadow: 0 0 0 2px rgba(102,126,234,0.2);
+                }
+
+        .register-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+            .register-btn:hover {
+                opacity: 0.9;
+                transform: translateY(-1px);
+            }
+
+        .message {
+            margin-top: 15px;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .error {
+            color: #e74c3c;
+        }
+
+        .success {
+            color: #2ecc71;
+        }
+
+        .login-link {
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+            .login-link a {
+                color: #667eea;
+                text-decoration: none;
+                font-weight: bold;
+            }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 15px;
+            background: #fff;
+            font-size: 13px;
+            color: #999;
+            box-shadow: 0 -4px 6px rgba(0,0,0,0.05);
+        }
+
+        /* Responsive */
+        @@media (max-width: 500px) {
+            .register-container
+
+        {
+            width: 90%;
+            padding: 30px;
+        }
+
+        nav {
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+            nav a {
+                margin: 5px 0 0 0;
+            }
+
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav>
+        <h1>🎓 ITI Exam Portal</h1>
+        <div>
+            <a asp-controller="Login" asp-action="Login">Login</a>
+            <a asp-controller="Register" asp-action="Index">Register</a>
+        </div>
+    </nav>
+
+    <!-- Main registration form -->
+    <div class="register-container">
+        <h2>📝 ITI Student Registration</h2>
+
+        <form asp-action="Index" method="post" asp-controller="Register">
+            <div class="form-group">
+                <label>Name</label>
+                <input asp-for="StudentName" placeholder="Enter your full name" required />
+            </div>
+
+            <div class="form-group">
+                <label>Email</label>
+                <input asp-for="StudentEmail" placeholder="Enter your email" required />
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <input asp-for="Password" type="password" placeholder="Enter your password" required />
+            </div>
+
+            <div class="form-group">
+                <label>Social Security Number</label>
+                <input asp-for="StudentSocialSecurityNumber" placeholder="Enter yourSocial Security Number" required />
+            </div>
+
+            <div class="form-group">
+                <label>Phone</label>
+                <input asp-for="StudentPhoneNumber" placeholder="Enter your phone number" />
+            </div>
+
+            <div class="form-group">
+                <label>Track</label>
+                <select asp-for="TrackId" asp-items="ViewBag.Tracks">
+                    <option value="">-- Select Track --</option>
+                </select>
+            </div>
+
+            <button type="submit" class="register-btn">Register</button>
+        </form>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="message error">@ViewBag.Error</div>
+        }
+
+        @if (ViewBag.Success != null)
+        {
+            <div class="message success">@ViewBag.Success</div>
+        }
+
+        <div class="login-link">
+            Already have an account? <a asp-controller="Login" asp-action="Login">Login here</a>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        © 2026 ITI Examination System • Information Technology Institute
+    </footer>
+
+</body>
+</html>
