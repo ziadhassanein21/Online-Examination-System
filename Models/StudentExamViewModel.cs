@@ -11,5 +11,6 @@ namespace ASQL_Online_Exam_.Models
         public string? ExamDescription { get; set; }
         public int? CourseId { get; set; }
         public int? Grade { get; set; }
+        public int? totalGrade { get; set; }
     }
 }

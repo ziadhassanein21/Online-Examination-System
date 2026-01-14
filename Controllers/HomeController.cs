@@ -218,7 +218,8 @@ namespace ASQL_Online_Exam_.Controllers
                         ExamDuration = GetSafeInt(reader, "examDuration"),
                         ExamDescription = GetSafeString(reader, "examDescription"),
                         CourseId = GetSafeInt(reader, "courseID"),
-                        Grade = GetSafeInt(reader, "grade")
+                        Grade = GetSafeInt(reader, "grade"),
+                        totalGrade = GetSafeInt(reader,"totalGrade")
                     });
                 }
             }

@@ -40,6 +40,7 @@ namespace ASQL_Online_Exam_.Controllers
 
             // Pass result to view using ViewBag (compatible with existing Result.cshtml)
             TempData["ExamGrade"] = result.Grade;
+            TempData["totalGrade"] = result.TotalGrade;
             TempData["ExamTitle"] = result.ExamTitle;
 
             return RedirectToAction("Result");
@@ -53,11 +54,13 @@ namespace ASQL_Online_Exam_.Controllers
 
             var grade = TempData["ExamGrade"] as int?;
             var examTitle = TempData["ExamTitle"] as string;
+            var totalGrade = TempData["totalGrade"] as int?;
 
             if (grade == null) return RedirectToAction("MyExams", "Home");
 
             ViewBag.Grade = grade;
             ViewBag.ExamTitle = examTitle;
+            ViewBag.TotalGrade = totalGrade;
             ViewBag.StudentName = GetStudentName(studentId.Value);
 
             return View();
@@ -92,17 +95,20 @@ namespace ASQL_Online_Exam_.Controllers
             return viewModel;
         }
 
-        private void LoadExamData(SqlConnection connection, int studentId, int examId,
-            ExamViewModel viewModel, List<ExamQuestionViewModel> questions)
+        private void LoadExamData(
+    SqlConnection connection,
+    int studentId,
+    int examId,
+    ExamViewModel viewModel,
+    List<ExamQuestionViewModel> questions)
         {
-            using var cmd = new SqlCommand("dbo.GetStudentExam", connection);
+            using var cmd = new SqlCommand("dbo.GetStudentExamTest", connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@studentId", studentId);
             cmd.Parameters.AddWithValue("@examId", examId);
 
             using var reader = cmd.ExecuteReader();
 
-            // Result set 1: Exam details
             if (reader.Read())
             {
                 viewModel.ExamId = reader.GetInt32(reader.GetOrdinal("examId"));
@@ -112,8 +118,7 @@ namespace ASQL_Online_Exam_.Controllers
                 viewModel.ExamDate = GetSafeDateTime(reader, "examDate") ?? DateTime.Now;
                 viewModel.CourseName = GetSafeString(reader, "courseName") ?? "";
             }
-
-            // Result set 2: Questions
+            
             if (reader.NextResult())
             {
                 while (reader.Read())
@@ -121,6 +126,7 @@ namespace ASQL_Online_Exam_.Controllers
                     questions.Add(new ExamQuestionViewModel
                     {
                         QuestionId = reader.GetInt32(reader.GetOrdinal("questionId")),
+                        questionInstanceId = GetSafeIntConverted(reader, "questionInstanceId"),
                         QuestionText = GetSafeString(reader, "questionText") ?? "",
                         QuestionType = GetSafeIntConverted(reader, "questionType"),
                         QuestionGrade = GetSafeIntConverted(reader, "questionGrade"),
@@ -129,35 +135,35 @@ namespace ASQL_Online_Exam_.Controllers
                 }
             }
 
-            // Result set 3: Choices
             if (reader.NextResult())
             {
                 while (reader.Read())
                 {
-                    var questionId = reader.GetInt32(reader.GetOrdinal("questionId"));
-                    var question = questions.FirstOrDefault(q => q.QuestionId == questionId);
+                    int questionInstanceId =
+                        GetSafeIntConverted(reader, "questionInstanceId");
 
-                    question?.Choices.Add(new ChoiceViewModel
+                    var question = questions
+                        .FirstOrDefault(q => q.questionInstanceId == questionInstanceId);
+
+                    if (question != null)
                     {
-                        ChoiceId = reader.GetInt32(reader.GetOrdinal("choiceId")),
-                        ChoiceText = GetSafeString(reader, "choiceText") ?? ""
-                    });
+                        question.Choices.Add(new ChoiceViewModel
+                        {
+                            ChoiceId = reader.GetInt32(reader.GetOrdinal("choiceId")),
+                            ChoiceText = GetSafeString(reader, "choiceText") ?? ""
+                        });
+                    }
                 }
             }
         }
 
-        private (int Grade, string ExamTitle) ProcessExamSubmission(int studentId, int examId, Dictionary<int, int> answers)
+        private (int Grade, string ExamTitle, int TotalGrade) ProcessExamSubmission
+            (int studentId, int examId, Dictionary<int, int> answers)
         {
             using var connection = new SqlConnection(_context.Database.GetConnectionString());
             connection.Open();
-
-            // Step 1: Save answers
             SaveAnswers(connection, examId, studentId, answers);
-
-            // Step 2: Calculate grade
             CalculateGrade(connection, studentId, examId);
-
-            // Step 3: Get result
             return GetExamResult(connection, studentId, examId);
         }
 
@@ -193,28 +199,40 @@ namespace ASQL_Online_Exam_.Controllers
             cmd.ExecuteNonQuery();
         }
 
-        private (int Grade, string ExamTitle) GetExamResult(SqlConnection connection, int studentId, int examId)
-        {
-            const string sql = @"
-                SELECT se.grade, e.examTitle 
-                FROM studentExam se 
-                JOIN examDetails e ON se.examId = e.examId 
-                WHERE se.studentId = @studentId AND se.examId = @examId";
 
-            using var cmd = new SqlCommand(sql, connection);
+        private (int Grade, string ExamTitle, int TotalGrade)
+    GetExamResult(SqlConnection connection, int studentId, int examId)
+        {
+            using var cmd = new SqlCommand(
+                "dbo.usp_CalculateExamGradeTesttest",
+                connection);
+
+            cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@studentId", studentId);
             cmd.Parameters.AddWithValue("@examId", examId);
 
             using var reader = cmd.ExecuteReader();
+
             if (reader.Read())
             {
-                var grade = reader.IsDBNull(0) ? 0 : Convert.ToInt32(reader.GetValue(0));
-                var title = reader.IsDBNull(1) ? "" : reader.GetString(1);
-                return (grade, title);
+                int grade = reader.IsDBNull(reader.GetOrdinal("grade"))
+                    ? 0
+                    : reader.GetInt32(reader.GetOrdinal("grade"));
+
+                string title = reader.IsDBNull(reader.GetOrdinal("examTitle"))
+                    ? ""
+                    : reader.GetString(reader.GetOrdinal("examTitle"));
+
+                int totalGrade = reader.IsDBNull(reader.GetOrdinal("totalGrade"))
+                    ? 0
+                    : reader.GetInt32(reader.GetOrdinal("totalGrade"));
+
+                return (grade, title, totalGrade);
             }
 
-            return (0, "");
+            return (0, "", 0);
         }
+
 
         #endregion
 

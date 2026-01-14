@@ -1,22 +1,38 @@
+
 @{
     ViewData["Title"] = "Exam Result";
     Layout = null;
-    
-    var grade = ViewBag.Grade as int? ?? 0;
-    var examTitle = ViewBag.ExamTitle as string ?? "Exam";
-    var studentName = ViewBag.StudentName as string ?? "Student";
-    
-    // Determine grade status
-    var isPassed = grade >= 50;
-    var gradeClass = grade >= 85 ? "excellent" : grade >= 70 ? "good" : grade >= 50 ? "pass" : "fail";
-    var gradeLabel = grade >= 85 ? "Excellent!" : grade >= 70 ? "Good Job!" : grade >= 50 ? "Passed" : "Failed";
+
+    // Read ViewBag values (these were set in the controller above)
+    int grade = ViewBag.Grade as int? ?? 0;
+    int totalGrade = ViewBag.TotalGrade as int? ?? 0;
+    string examTitle = ViewBag.ExamTitle as string ?? "Exam";
+    string studentName = ViewBag.StudentName as string ?? "Student";
+
+    // Compute percentage (guard against divide-by-zero)
+    double percentage = totalGrade > 0 ? ((double)grade / totalGrade) * 100.0 : 0.0;
+    bool isPassed = percentage >= 50.0;
+
+    // Class and label selection based on percentage
+    string gradeClass = percentage >= 85.0 ? "excellent"
+                     : percentage >= 70.0 ? "good"
+                     : percentage >= 50.0 ? "pass" : "fail";
+
+    string gradeLabel = percentage >= 85.0 ? "Excellent!"
+                     : percentage >= 70.0 ? "Good Job!"
+                     : percentage >= 50.0 ? "Passed" : "Failed";
+
+    string gradeMessage = percentage >= 85.0 ? "Outstanding performance! You've demonstrated excellent understanding of the material."
+                       : percentage >= 70.0 ? "Great job! You have a solid understanding of the subject matter."
+                       : percentage >= 50.0 ? "You passed! Keep studying to improve your score next time."
+                       : "Don't give up! Review the material and try again.";
 }
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"]</title>
     <style>
         * {
@@ -38,19 +54,20 @@
         .result-card {
             background: white;
             border-radius: 20px;
-            padding: 50px;
+            padding: 40px;
             text-align: center;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.25);
-            max-width: 500px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.18);
+            max-width: 560px;
             width: 100%;
-            animation: slideUp 0.6s ease;
+            animation: slideUp 0.5s ease;
         }
 
         @@keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -58,92 +75,103 @@
         }
 
         .result-icon {
-            font-size: 80px;
-            margin-bottom: 20px;
+            font-size: 64px;
+            margin-bottom: 12px;
         }
 
         .result-title {
-            font-size: 28px;
+            font-size: 26px;
             color: #333;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
 
         .exam-name {
-            font-size: 16px;
+            font-size: 15px;
             color: #666;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         .grade-circle {
-            width: 150px;
-            height: 150px;
+            width: 160px;
+            height: 160px;
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            margin: 0 auto 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            margin: 0 auto 18px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.12);
         }
 
-        .grade-circle.excellent {
-            background: linear-gradient(135deg, #10b981, #059669);
-        }
+            .grade-circle.excellent {
+                background: linear-gradient(135deg, #10b981, #059669);
+            }
 
-        .grade-circle.good {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-        }
+            .grade-circle.good {
+                background: linear-gradient(135deg, #3b82f6, #2563eb);
+            }
 
-        .grade-circle.pass {
-            background: linear-gradient(135deg, #f59e0b, #d97706);
-        }
+            .grade-circle.pass {
+                background: linear-gradient(135deg, #f59e0b, #d97706);
+            }
 
-        .grade-circle.fail {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-        }
+            .grade-circle.fail {
+                background: linear-gradient(135deg, #ef4444, #dc2626);
+            }
 
         .grade-value {
-            font-size: 48px;
+            font-size: 24px;
             font-weight: 700;
             color: white;
         }
 
         .grade-percent {
-            font-size: 18px;
-            color: rgba(255,255,255,0.9);
+            font-size: 14px;
+            color: rgba(255,255,255,0.95);
+            margin-top: 6px;
         }
 
         .grade-label {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 600;
             margin-bottom: 10px;
         }
 
-        .grade-label.excellent { color: #10b981; }
-        .grade-label.good { color: #3b82f6; }
-        .grade-label.pass { color: #f59e0b; }
-        .grade-label.fail { color: #ef4444; }
+            .grade-label.excellent {
+                color: #10b981;
+            }
+
+            .grade-label.good {
+                color: #3b82f6;
+            }
+
+            .grade-label.pass {
+                color: #f59e0b;
+            }
+
+            .grade-label.fail {
+                color: #ef4444;
+            }
 
         .message {
-            color: #666;
+            color: #555;
             font-size: 15px;
-            margin-bottom: 30px;
+            margin-bottom: 22px;
             line-height: 1.6;
         }
 
         .buttons {
             display: flex;
-            gap: 15px;
+            gap: 12px;
             justify-content: center;
         }
 
         .btn {
-            padding: 14px 30px;
+            padding: 12px 22px;
             border-radius: 10px;
-            font-size: 15px;
+            font-size: 14px;
             font-weight: 600;
             text-decoration: none;
-            transition: all 0.3s;
             cursor: pointer;
             border: none;
         }
@@ -153,34 +181,18 @@
             color: white;
         }
 
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
-        }
-
         .btn-secondary {
             background: #f3f4f6;
             color: #374151;
         }
 
-        .btn-secondary:hover {
-            background: #e5e7eb;
-        }
-
-        .confetti {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-            z-index: 100;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
         }
     </style>
 </head>
 <body>
-
     @if (isPassed)
     {
         <div class="confetti" id="confetti"></div>
@@ -188,15 +200,15 @@
 
     <div class="result-card">
         <div class="result-icon">
-            @if (grade >= 85)
+            @if (percentage >= 85.0)
             {
                 <span>🏆</span>
             }
-            else if (grade >= 70)
+            else if (percentage >= 70.0)
             {
                 <span>🎉</span>
             }
-            else if (grade >= 50)
+            else if (percentage >= 50.0)
             {
                 <span>✅</span>
             }
@@ -210,30 +222,13 @@
         <p class="exam-name">@examTitle • @studentName</p>
 
         <div class="grade-circle @gradeClass">
-            <span class="grade-value">@grade</span>
-            <span class="grade-percent">%</span>
+            <div class="grade-value">@grade <span style="font-size:16px;font-weight:600;">/ @totalGrade</span></div>
+            <div class="grade-percent">@Math.Round(percentage, 1)%</div>
         </div>
 
         <h2 class="grade-label @gradeClass">@gradeLabel</h2>
 
-        <p class="message">
-            @if (grade >= 85)
-            {
-                <text>Outstanding performance! You've demonstrated excellent understanding of the material.</text>
-            }
-            else if (grade >= 70)
-            {
-                <text>Great job! You have a solid understanding of the subject matter.</text>
-            }
-            else if (grade >= 50)
-            {
-                <text>You passed! Keep studying to improve your score next time.</text>
-            }
-            else
-            {
-                <text>Don't give up! Review the material and try again.</text>
-            }
-        </p>
+        <p class="message">@gradeMessage</p>
 
         <div class="buttons">
             <a href="@Url.Action("Index", "Home")" class="btn btn-primary">🏠 Back to Dashboard</a>
@@ -245,10 +240,9 @@
     {
         <script>
             // Simple confetti effect for passing
-            function createConfetti() {
+            (function () {
                 const colors = ['#667eea', '#764ba2', '#10b981', '#f59e0b', '#3b82f6'];
                 const confettiContainer = document.getElementById('confetti');
-                
                 for (let i = 0; i < 50; i++) {
                     const confetti = document.createElement('div');
                     confetti.style.cssText = `
@@ -259,27 +253,25 @@
                         left: ${Math.random() * 100}%;
                         top: -10px;
                         border-radius: ${Math.random() > 0.5 ? '50%' : '0'};
+                        transform: rotate(${Math.random() * 360}deg);
                         animation: fall ${2 + Math.random() * 3}s linear forwards;
                     `;
                     confettiContainer.appendChild(confetti);
                 }
-            }
 
-            // Add fall animation
-            const style = document.createElement('style');
-            style.textContent = `
-                @@keyframes fall {
-                    to {
-                        transform: translateY(100vh) rotate(720deg);
-                        opacity: 0;
+                // Add fall animation via appendChild style block (use @@ to output keyframes)
+                const style = document.createElement('style');
+                style.textContent = `
+                    @@keyframes fall {
+                        to {
+                            transform: translateY(100vh) rotate(720deg);
+                            opacity: 0;
+                        }
                     }
-                }
-            `;
-            document.head.appendChild(style);
-
-            createConfetti();
+                `;
+                document.head.appendChild(style);
+            })();
         </script>
     }
-
 </body>
 </html>

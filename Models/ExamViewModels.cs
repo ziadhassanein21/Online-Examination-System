@@ -25,6 +25,8 @@ namespace ASQL_Online_Exam_.Models
         public string QuestionText { get; set; } = string.Empty;
         public int QuestionType { get; set; }
         public int QuestionGrade { get; set; }
+
+        public int questionInstanceId { get; set; }
         public List<ChoiceViewModel> Choices { get; set; } = new();
     }
 
@@ -35,6 +37,8 @@ namespace ASQL_Online_Exam_.Models
     {
         public int ChoiceId { get; set; }
         public string ChoiceText { get; set; } = string.Empty;
+
+        public int questionInstanceId { get; set; }
     }
 
     /// <summary>
