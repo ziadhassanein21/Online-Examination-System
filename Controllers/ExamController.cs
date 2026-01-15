@@ -102,7 +102,7 @@ namespace ASQL_Online_Exam_.Controllers
     ExamViewModel viewModel,
     List<ExamQuestionViewModel> questions)
         {
-            using var cmd = new SqlCommand("dbo.GetStudentExamTest", connection);
+            using var cmd = new SqlCommand("dbo.GetStudentExam", connection);
             cmd.CommandType = CommandType.StoredProcedure;
             cmd.Parameters.AddWithValue("@studentId", studentId);
             cmd.Parameters.AddWithValue("@examId", examId);
@@ -204,7 +204,7 @@ namespace ASQL_Online_Exam_.Controllers
     GetExamResult(SqlConnection connection, int studentId, int examId)
         {
             using var cmd = new SqlCommand(
-                "dbo.usp_CalculateExamGradeTesttest",
+                "dbo.usp_CalculateExamGrade",
                 connection);
 
             cmd.CommandType = CommandType.StoredProcedure;

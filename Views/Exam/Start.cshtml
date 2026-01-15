@@ -223,7 +223,7 @@
                         </div>
                     }
 
-                    <input type="submit" value="✅ Submit Exam" onclick="return confirmSubmit()" />
+                    <input type="submit" value="✅ Submit Exam"  />
                 </form>
             }
             else
@@ -257,21 +257,6 @@
             option.classList.add('selected');
         }
 
-        // Confirm submission
-        function confirmSubmit() {
-            var total = document.querySelectorAll('.form-group').length;
-            var answered = 0;
-            document.querySelectorAll('.form-group').forEach(function(group) {
-                if (group.querySelector('.option.selected')) {
-                    answered++;
-                }
-            });
-            
-            if (answered < total) {
-                return confirm('You have answered ' + answered + ' out of ' + total + ' questions. Are you sure you want to submit?');
-            }
-            return confirm('Are you sure you want to submit your exam?');
-        }
 
         // Timer countdown
         var duration = @Model.ExamDuration * 60;
